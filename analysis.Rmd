@@ -3,7 +3,7 @@ title: "Prestudy Report"
 author: "sasha popov"
 date: "`r Sys.Date()`"
 output:
-  rmdformats::html_clean:
+  rmdformats::readthedown:
     self_contained: true
     thumbnails: false
     lightbox: true
