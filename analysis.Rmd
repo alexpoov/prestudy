@@ -1,0 +1,286 @@
+---
+title: "Prestudy Report"
+author: "sasha popov"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::html_clean:
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+    gallery: false
+    highlight: tango
+    code_folding: hide
+    toc: TRUE
+    toc_depth: 3
+    fig_width: 12
+    fig_height: 8
+
+---
+
+## 1. Demographic Data (Exploratry Data Analysis, a.k.a. Overview)
+
+```{r}
+library(tidyverse)
+library(gt)
+source("analysfunc.R")
+df_act = compose_action_df()
+resp = elicit_respondents(df_act, no_timestamp = FALSE) |> 
+  left_join(institute_lookup, by = c("subj" = "dep")) |> 
+  na.omit()
+```
+
+Overall participants:
+
+```{r}
+print(nrow(resp))
+```
+
+
+Our respondent's data has 6 key observations:
+* `age` - age
+* `gender` (with ability to enter gender if non-binary)
+* `subj` - department of the student's program/major
+* `edu_year` - amount of years in the university
+* `occup` - amount of years in Norway
+* `family_acad` - highest degree of parents
+* `orient`- sexual orientation
+
+Let's plot demographic data
+
+```{r}
+resp |>  head() |>  gt()
+```
+
+## 2. Age & Gender
+
+```{r}
+resp |> 
+  group_by(gender) |> 
+  count()
+```
+
+We see that gender is evenly distributed over the survey.
+
+```{r}
+data_age_gender = resp |> 
+    mutate(age = as.numeric(age)) |>
+    count(age, gender) |>
+    complete(age = 18:40, fill = list(n = 0))
+
+ggplot(data_age_gender) +
+  geom_bar(aes(x = age, y = n, fill = gender), stat = "identity") +
+  theme_minimal() +
+  labs(
+    title = "Age/Gender Distribution of Prestudy Respondents",
+    subtitle = "absolute values",
+    x = "Age",
+    y = "Respondents"
+  ) +
+  scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059"))
+```
+
+```{r}
+ggplot(data_age_gender |> group_by(age) |> mutate(total_resp = sum(n)) |> filter(total_resp >= 10))+
+  geom_bar(aes(x = age, y = n, fill = gender), stat = "identity", position = "fill") +
+  theme_minimal() +
+  labs(
+    title = "Age/Gender Distribution of Prestudy Respondents",
+    subtitle = "relative values for years with 10+ obs",
+    x = "Age",
+    y = "Respondents"
+  ) +
+  scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059"))
+```
+
+Maybe it's make sense to replace gender "other" to non-binary in plots:
+
+```{r}
+resp |> 
+  filter(gender == "other") |> 
+  select(gender_oth) |> 
+  head()
+```
+
+## 3. Departments & Institutes
+
+We still have majority of students from ex-MATNAT, and 0 respondents from Medicine and Law Faculties:
+
+
+
+```{r}
+data_inst_dep = resp |> 
+  group_by(institute, subj) |> 
+  count() |> 
+  full_join(institute_lookup, by = c("institute", "subj" = "dep")) |> 
+  mutate(n = ifelse(is.na(n), 0, n))
+
+cutiepie = c("Faculty of Fine Art, Music and Design" = "#9A3FE5", "Faculty of Humanities" = "#D5CC4A", "Faculty of Law" = "#B73737", "Faculty of Mathematics and Natural Sciences" = "#2C968C", "Faculty of Medicine" = "#55DB46", "Faculty of Psychology" = "#3E63B3", "Faculty of Social Sciences" = "#C48E43")
+
+
+institue_color = data_inst_dep |>
+  group_by(institute) |> 
+  count() |> 
+  cbind(color = cutiepie) |>  # 7 institutes 7 colors
+  select(-n)
+
+dep_color_palette_vector = generate_department_colors(data_inst_dep, institue_color) 
+dep_color_palette = data.frame(Name = names(dep_color_palette_vector), Value = dep_color_palette_vector, stringsAsFactors = FALSE, row.names = NULL)
+data_inst_dep = data_inst_dep |> 
+  left_join(dep_color_palette, by = c("subj" = "Name")) |> 
+  mutate(institute_subj = interaction(institute, subj, sep = ": ")) |> 
+  arrange(institute_subj)
+```
+
+```{r}
+data_inst_dep  |> 
+  ggplot() +
+  geom_bar(aes(x = institute, y = n), stat = "identity") +
+  theme_minimal() + 
+  labs(
+    title = "Respondents by Institute",
+    fill = "Department",
+    x = "institute",
+    y = "respondents"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+```{r}
+data_inst_dep  |> 
+  ggplot() +
+  geom_bar(aes(x = institute, y = n, fill = institute_subj), stat = "identity") +
+  theme_minimal() + 
+  labs(
+    title = "Respondents by Department",
+    fill = "Department",
+    x = "institute",
+    y = "respondents"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  scale_fill_manual(values = data_inst_dep$Value) + 
+  guides(fill = guide_legend(ncol = 1))
+```
+
+## 4. Education Year
+
+```{r}
+data_edu_years = resp |> 
+  mutate(edu_year = as.numeric(edu_year)) |> 
+  group_by(gender, edu_year) |> 
+  count(edu_year) |> 
+  filter(edu_year < 10)
+
+ggplot(data_edu_years) +
+  geom_bar(aes(x = edu_year, y = n, fill = gender), stat = "identity") +
+  theme_minimal() +
+  labs(
+    title = "Current Year as a Student",
+    subtitle = "Distribution of Prestudy Respondents",
+    x = "Years of Education",
+    y = "Respondents"
+  ) +
+  scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059"))
+```
+
+## 5. Occupation
+
+This was a proxy on native / international student:
+
+```{r}
+cat(sum(resp$age == resp$occup), " ot of ", nrow(resp), " respondents lived in Norway the whole life (", round(sum(resp$age == resp$occup)/nrow(resp)*100,2), "%)", sep = "")
+```
+
+Only a small part of students are from abroad: 
+
+```{r}
+resp_no_full_norw = resp |> 
+  filter(age != occup) |> 
+  select(age, occup) |> 
+  mutate(
+    age = as.numeric(age),
+    occup = as.numeric(occup),
+    diff = age - occup) |> 
+  filter(diff > 0) 
+
+resp_no_full_norw |> 
+  summarise(average_age_occup_differnece = mean(diff)) |> 
+  gt()
+```
+
+```{r}
+ggplot(resp_no_full_norw) + 
+  geom_bar(aes(x = occup)) + 
+  theme_minimal() + 
+  labs(
+    title = "Years in Norway",
+    subtitle = "Distribution for students whos age != occup_years",
+    x = "Years in Norway",
+    y = "Respondents"
+  )
+```
+
+## 6. First of the Family
+
+Higher degree of family members can also correlate with the preformance, well-being, etc. 
+
+```{r}
+data_family =  resp |> 
+  group_by(family_acad, institute) |> 
+  count() |> 
+  mutate(family_acad = factor(family_acad,
+                                 levels = c(
+                                   "elementary school",
+                                   "secondary school" ,
+                                   "Bachelor (or equivalent)",
+                                   "Master (or equivalent)",
+                                   "PhD")),
+         institute = factor(institute, 
+                            levels = c("Faculty of Fine Art, Music and Design ", "Faculty of Humanities", "Faculty of Mathematics and Natural Sciences", "Faculty of Psychology", "Faculty of Social Sciences"))) |> 
+  left_join(institue_color, by = "institute")
+
+ggplot(data_family) +
+  geom_bar(aes(x = family_acad, y = n), stat = "identity") + 
+  theme_minimal() + 
+  labs(
+    title = "Parents' highest degree",
+    x = "Highest Degree",
+    y = "Respondents"
+  ) 
+```
+
+```{r}
+# bugged
+data_family  |> 
+  arrange(institute) |> 
+  ggplot() +
+    geom_bar(aes(x = family_acad, y = n, fill = institute), stat = "identity") + 
+    theme_minimal() + 
+    labs(
+      title = "Parents' highest degree",
+      x = "Highest Degree",
+      y = "Respondents", 
+      fill = "Faculty"
+    ) +
+  scale_fill_manual(values = c(cutiepie[-3][-4], "black", "black", "black", "black"))
+
+
+```
+
+## 7. Sexual Orientation
+
+```{r}
+data_so = resp |> 
+  group_by(orient) |> 
+  count()
+
+ggplot(data_so) +
+  geom_bar(aes(x = orient, y = n), stat = "identity") + 
+  theme_minimal() + 
+  labs(
+    title = "Sexual Orientation",
+    x = "Highest Degree",
+    y = "Orientation"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
