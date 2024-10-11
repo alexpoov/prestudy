@@ -3,7 +3,8 @@ title: "Prestudy Report"
 author: "sasha popov"
 date: "`r Sys.Date()`"
 output:
-  rmdformats::readthedown:
+  rmdformats::html_clean:
+    keep_md: true
     self_contained: true
     thumbnails: false
     lightbox: true
@@ -19,7 +20,7 @@ output:
 
 ## 1. Demographic Data (Exploratry Data Analysis, a.k.a. Overview)
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(gt)
 source("analysfunc.R")
@@ -36,22 +37,23 @@ print(nrow(resp))
 ```
 
 
-Our respondent's data has 6 key observations:
-* `age` - age
-* `gender` (with ability to enter gender if non-binary)
-* `subj` - department of the student's program/major
-* `edu_year` - amount of years in the university
-* `occup` - amount of years in Norway
-* `family_acad` - highest degree of parents
-* `orient`- sexual orientation
+Our respondent's data has 6 key observations:  
 
-Let's plot demographic data
+* `age` - age. 
+* `gender` (with ability to enter gender if non-binary). 
+* `subj` - department of the student's program/major. 
+* `edu_year` - amount of years in the university. 
+* `occup` - amount of years in Norway. 
+* `family_acad` - highest degree of parents. 
+* `orient`- sexual orientation. 
 
 ```{r}
 resp |>  head() |>  gt()
 ```
 
-## 2. Age & Gender
+Let's plot demographic data
+
+### Age & Gender
 
 ```{r}
 resp |> 
@@ -101,7 +103,7 @@ resp |>
   head()
 ```
 
-## 3. Departments & Institutes
+### Departments & Institutes
 
 We still have majority of students from ex-MATNAT, and 0 respondents from Medicine and Law Faculties:
 
@@ -146,7 +148,9 @@ data_inst_dep  |>
 ```
 
 ```{r}
-data_inst_dep  |> 
+data_inst_dep_nonull = data_inst_dep  |> 
+  filter(n>0)
+data_inst_dep_nonull |> 
   ggplot() +
   geom_bar(aes(x = institute, y = n, fill = institute_subj), stat = "identity") +
   theme_minimal() + 
@@ -157,11 +161,11 @@ data_inst_dep  |>
     y = "respondents"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
-  scale_fill_manual(values = data_inst_dep$Value) + 
+  scale_fill_manual(values = data_inst_dep_nonull$Value) + 
   guides(fill = guide_legend(ncol = 1))
 ```
 
-## 4. Education Year
+### Education Year
 
 ```{r}
 data_edu_years = resp |> 
@@ -182,7 +186,7 @@ ggplot(data_edu_years) +
   scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059"))
 ```
 
-## 5. Occupation
+### Occupation
 
 This was a proxy on native / international student:
 
@@ -219,7 +223,7 @@ ggplot(resp_no_full_norw) +
   )
 ```
 
-## 6. First of the Family
+### First of the Family
 
 Higher degree of family members can also correlate with the preformance, well-being, etc. 
 
@@ -249,7 +253,6 @@ ggplot(data_family) +
 ```
 
 ```{r}
-# bugged
 data_family  |> 
   arrange(institute) |> 
   ggplot() +
@@ -266,10 +269,11 @@ data_family  |>
 
 ```
 
-## 7. Sexual Orientation
+### Sexual Orientation
 
 ```{r}
 data_so = resp |> 
+  filter(orient != "") |> 
   group_by(orient) |> 
   count()
 
