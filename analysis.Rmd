@@ -526,6 +526,7 @@ total_df |>
       domain = c(-2.5, 0, 2)))
 ```
 
+## Bugfixing (DONT READ BELOW ITS ALL WRONG)
 
 ### What topics are mostly perceived as masculine or feminine?
 
@@ -751,7 +752,6 @@ evals |>
 
 --- end of non valid ---
 
-## Bugfixing
 
 ```{r}
 
