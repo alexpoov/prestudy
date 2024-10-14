@@ -1,10 +1,10 @@
 library(tidyverse)
 
-compose_action_df = function(TF = "~/PhD/proj/code/pre-study/prestudy_app/responses/", SF = list.files(TF)[-c(1, 2)]){ # drop lottery consents and followups){
+compose_df = function(mode, TF = "~/PhD/proj/code/pre-study/prestudy_app/responses/", SF = list.files(TF)[-c(1, 2)]){ # drop lottery consents and followups){
   ds <- do.call(
     rbind, # combine all dataframes into one
     lapply(SF, function(x) { # iterate over the subfolders 
-      file_path <- paste(TF, x, "/log_user.csv", sep = "") # file path
+      file_path <- paste(TF, x, "/log_", mode, ".csv", sep = "") # file path
       read.csv(file_path) # read the CSV from the file path
     }))
   return(ds)

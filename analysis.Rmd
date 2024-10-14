@@ -24,7 +24,8 @@ output:
 library(tidyverse)
 library(gt)
 source("analysfunc.R")
-df_act = compose_action_df()
+df_act = compose_df("user") |> 
+  mutate(timestamp = ymd_hms(timestamp))
 resp = elicit_respondents(df_act, no_timestamp = FALSE) |> 
   left_join(institute_lookup, by = c("subj" = "dep")) |> 
   na.omit()
@@ -48,7 +49,7 @@ Our respondent's data has 6 key observations:
 * `orient`- sexual orientation. 
 
 ```{r}
-resp |>  head() |>  gt()
+resp |> head() 
 ```
 
 Let's plot demographic data
@@ -207,8 +208,7 @@ resp_no_full_norw = resp |>
   filter(diff > 0) 
 
 resp_no_full_norw |> 
-  summarise(average_age_occup_differnece = mean(diff)) |> 
-  gt()
+  summarise(average_age_occup_differnece = mean(diff))
 ```
 
 ```{r}
@@ -286,5 +286,175 @@ ggplot(data_so) +
     y = "Orientation"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+## 2. Responses Analysis
+
+```{r}
+scale_genderness = c("Completely Masculine", "Mostly Masculine", "Slightly Masculine", "Neutral", "Slightly Feminine", "Mostly Feminine", "Completely Feminine")
+scale_familiarity = c("Not Familiar at All", "Slightly Familiar", "Moderately Familiar", "Very Familiar", "Highly Familiar")
+
+evals = compose_df("evals") |> 
+  mutate(familiarity = factor(familiarity, levels = scale_familiarity),
+         gender = factor(gender, levels = scale_genderness))
+evals |>  head()
+```
+
+* For gender perception evaluations, as expected, totally normal distribution:
+
+```{r}
+evals |> 
+  group_by(gender_level = as.factor(gender)) |> 
+  count() |> 
+  ggplot() +
+  geom_bar(aes(x = gender_level, y = n), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Distribution of gender evaluations in the prestudy",
+       x = "Level of gender perception",
+       y = "Observations") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+* For familiarity evaluations, in contrast, there's a more versatile distribution:
+
+```{r}
+evals |> 
+  group_by(fam_level = as.factor(familiarity)) |> 
+  count() |> 
+  ggplot() +
+  geom_bar(aes(x = fam_level, y = n), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Distribution of familiarity evaluations in the prestudy",
+       x = "Level of familiarity",
+       y = "Observations") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+### Versioning
+
+The versioning was not counted before `2024-10-11 16:25:40` [commit](https://git.app.uib.no/ii/did/sasha_prestudy/-/commit/a024deedc01d34c2cf22346d3590eee4f05526f4) due to mistake on application's design side. More data to be gathered to find out whether the mistake can cause additional biases in data.
+
+```{r}
+df_act |> 
+  filter(action == "version") |> 
+  arrange(timestamp)
+```
+
+### What topics are mostly perceived as masculine or feminine?z
+
+There's a slight shift in topics set to a be more masculine:
+
+```{r}
+evals2 = evals |> 
+  mutate(gender = as.numeric(gender) - 4,
+         familiarity = as.numeric(familiarity))
+
+print(mean(evals2$gender))
+```
+
+It also reflects on the most extreme topics: **first 11 masuline topic are more related to the gender than the 2nd femine topic**:
+
+```{r}
+evals2_avgs = evals2 |> 
+  filter(round == 1) |> 
+  group_by(topic) |> 
+  summarise(
+    avg_fam = mean(familiarity),
+    avg_gen = mean(gender),
+    gen_eff = abs(avg_gen)
+  ) 
+
+evals2_avgs |> 
+  arrange(-gen_eff) |> 
+  head(15) |> 
+  select(-gen_eff) |> 
+  gt() |> 
+  data_color(
+    columns = vars(avg_gen),
+    colors = scales::col_numeric(
+      c("#509DA9", "#ffeb84", "#DD6C40"), 
+      domain = c(-2.5, 0, 2))) |>
+  cols_label(
+    avg_fam = "avg.Familiarity",
+    avg_gen = "avg.Gender Score"
+  ) |> 
+  tab_header(
+    title = md("Top 15 topics that are mostly perceived as masculine or feminine"),
+    subtitle = "sorted by absolute values"
+  )
+```
+
+Possible outcomes:
+
+* as the topic list was generated entirely by males, it could be a design bias.  
+  * e.g. things that were percieved as masculine are usually more specific (olympic records, star trek) than those that were considered as feminine (hr management, poetry). 
+* maybe stimuli in psycology tend to be related with more protected class of students?
+
+### Does the distribution of familiarity scores match gender perception?
+
+There's no correlation or effect of familiarity on gender scores.  
+
+```{r}
+ggplot(evals2_avgs) +
+  geom_point(aes(x = avg_fam, y = avg_gen, color = avg_gen), size = 4) + 
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    title = "Does the distribution of familiarity scores match gender perception?",
+    x = "Average familiarity",
+    y = "Average gender score",
+    color = ""
+  ) + 
+  scale_color_gradient2(
+    low = "#509DA9", 
+    mid = "#ffeb84", 
+    high = "#DD6C40", 
+    midpoint = 0
+  )
+```
+
+```{r}
+summary(lm(avg_gen ~ avg_fam, evals2_avgs))
+```
+
+* Students seem like hesitate to give extreme values to the topics even if they are familiar with it:
+
+```{r}
+evals2 |> 
+  filter(round == 1) |> 
+  mutate(familiarity = as.factor(familiarity),
+         gender = as.factor(gender)) |> 
+  group_by(familiarity, gender) |> 
+  count() |> 
+  ggplot() +
+    geom_bar(aes(x = gender, y = n), stat = "identity") +
+    facet_grid(rows = vars(familiarity),
+               labeller = as_labeller(c(`1` = "Not at All",
+                                        `2` = "Slightly ",
+                                        `3` = "Moderately ",
+                                        `4` = "Very",
+                                        `5` = "Highly"))) +
+    theme_minimal() +
+    labs(
+      title = "Does the distribution of familiarity scores match gender perception?",
+      x = "Average gender score",
+      y = "N responses",
+      
+    ) + 
+    scale_color_gradient2(
+      low = "#509DA9", 
+      mid = "#ffeb84", 
+      high = "#DD6C40", 
+      midpoint = 0
+    )
+```
+
+### Do men and women differ in the extent to which they associate the topics with the certain gender?
+
+```{r}
+# evals  |> 
+# left_join(
+#   select(resp, id, gender), by = "gender" # rename required
+# ) |> 
 ```
 

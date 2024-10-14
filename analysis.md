@@ -1,7 +1,7 @@
 ---
 title: "Prestudy Report"
 author: "sasha popov"
-date: "2024-10-11"
+date: "2024-10-14"
 output:
   rmdformats::html_clean:
     keep_md: true
@@ -25,7 +25,8 @@ output:
 library(tidyverse)
 library(gt)
 source("analysfunc.R")
-df_act = compose_action_df()
+df_act = compose_df("user") |> 
+  mutate(timestamp = ymd_hms(timestamp))
 resp = elicit_respondents(df_act, no_timestamp = FALSE) |> 
   left_join(institute_lookup, by = c("subj" = "dep")) |> 
   na.omit()
@@ -39,7 +40,7 @@ print(nrow(resp))
 ```
 
 ```
-## [1] 171
+## [1] 175
 ```
 
 
@@ -55,547 +56,20 @@ Our respondent's data has 6 key observations:
 
 
 ``` r
-resp |>  head() |>  gt()
+resp |> head() 
 ```
 
-```{=html}
-<div id="yhgwagectx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#yhgwagectx table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#yhgwagectx thead, #yhgwagectx tbody, #yhgwagectx tfoot, #yhgwagectx tr, #yhgwagectx td, #yhgwagectx th {
-  border-style: none;
-}
-
-#yhgwagectx p {
-  margin: 0;
-  padding: 0;
-}
-
-#yhgwagectx .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#yhgwagectx .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#yhgwagectx .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#yhgwagectx .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#yhgwagectx .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#yhgwagectx .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#yhgwagectx .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#yhgwagectx .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#yhgwagectx .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#yhgwagectx .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#yhgwagectx .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#yhgwagectx .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#yhgwagectx .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#yhgwagectx .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#yhgwagectx .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#yhgwagectx .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#yhgwagectx .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#yhgwagectx .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#yhgwagectx .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#yhgwagectx .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#yhgwagectx .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#yhgwagectx .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#yhgwagectx .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#yhgwagectx .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#yhgwagectx .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#yhgwagectx .gt_left {
-  text-align: left;
-}
-
-#yhgwagectx .gt_center {
-  text-align: center;
-}
-
-#yhgwagectx .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#yhgwagectx .gt_font_normal {
-  font-weight: normal;
-}
-
-#yhgwagectx .gt_font_bold {
-  font-weight: bold;
-}
-
-#yhgwagectx .gt_font_italic {
-  font-style: italic;
-}
-
-#yhgwagectx .gt_super {
-  font-size: 65%;
-}
-
-#yhgwagectx .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#yhgwagectx .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#yhgwagectx .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#yhgwagectx .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#yhgwagectx .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#yhgwagectx .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#yhgwagectx .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#yhgwagectx .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#yhgwagectx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-</style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="timestamp">timestamp</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="id">id</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="age">age</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="gender">gender</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="gender_oth">gender_oth</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="subj">subj</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="edu_year">edu_year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="occup">occup</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="family_acad">family_acad</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="orient">orient</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="institute">institute</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-09-26 20:40:17</td>
-<td headers="id" class="gt_row gt_left">034010ca-4d68-4856-afa9-4d7cf8bbb003</td>
-<td headers="age" class="gt_row gt_right">21</td>
-<td headers="gender" class="gt_row gt_left">female</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Earth Science</td>
-<td headers="edu_year" class="gt_row gt_right">2</td>
-<td headers="occup" class="gt_row gt_right">21</td>
-<td headers="family_acad" class="gt_row gt_left">Master (or equivalent)</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Mathematics and Natural Sciences</td></tr>
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-09-30 11:01:02</td>
-<td headers="id" class="gt_row gt_left">04e683b9-5e14-48b9-90cb-54062b158735</td>
-<td headers="age" class="gt_row gt_right">20</td>
-<td headers="gender" class="gt_row gt_left">male</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Informatics</td>
-<td headers="edu_year" class="gt_row gt_right">2</td>
-<td headers="occup" class="gt_row gt_right">20</td>
-<td headers="family_acad" class="gt_row gt_left">secondary school</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Mathematics and Natural Sciences</td></tr>
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-10-11 14:16:57</td>
-<td headers="id" class="gt_row gt_left">05bffbf4-08a1-42f8-b937-09d1452c2dee</td>
-<td headers="age" class="gt_row gt_right">20</td>
-<td headers="gender" class="gt_row gt_left">male</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Physics and Technology</td>
-<td headers="edu_year" class="gt_row gt_right">1</td>
-<td headers="occup" class="gt_row gt_right">13</td>
-<td headers="family_acad" class="gt_row gt_left">PhD</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Mathematics and Natural Sciences</td></tr>
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-09-30 10:59:54</td>
-<td headers="id" class="gt_row gt_left">07537ddc-8002-4fa6-8905-5ef8d208bd99</td>
-<td headers="age" class="gt_row gt_right">19</td>
-<td headers="gender" class="gt_row gt_left">female</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Informatics</td>
-<td headers="edu_year" class="gt_row gt_right">2</td>
-<td headers="occup" class="gt_row gt_right">19</td>
-<td headers="family_acad" class="gt_row gt_left">secondary school</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Mathematics and Natural Sciences</td></tr>
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-09-27 07:36:03</td>
-<td headers="id" class="gt_row gt_left">07885f0e-1d19-4890-80a5-6406f5bd7250</td>
-<td headers="age" class="gt_row gt_right">22</td>
-<td headers="gender" class="gt_row gt_left">female</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Education</td>
-<td headers="edu_year" class="gt_row gt_right">2</td>
-<td headers="occup" class="gt_row gt_right">22</td>
-<td headers="family_acad" class="gt_row gt_left">secondary school</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Psychology</td></tr>
-    <tr><td headers="timestamp" class="gt_row gt_right">2024-09-26 15:42:22</td>
-<td headers="id" class="gt_row gt_left">08811b01-c6c4-4316-9db0-047e74fe7802</td>
-<td headers="age" class="gt_row gt_right">21</td>
-<td headers="gender" class="gt_row gt_left">female</td>
-<td headers="gender_oth" class="gt_row gt_right"></td>
-<td headers="subj" class="gt_row gt_left">Department of Earth Science</td>
-<td headers="edu_year" class="gt_row gt_right">2</td>
-<td headers="occup" class="gt_row gt_right">20</td>
-<td headers="family_acad" class="gt_row gt_left">Bachelor (or equivalent)</td>
-<td headers="orient" class="gt_row gt_left">heterosexual / straight</td>
-<td headers="institute" class="gt_row gt_left">Faculty of Mathematics and Natural Sciences</td></tr>
-  </tbody>
-  
-  
-</table>
-</div>
+```
+## # A tibble: 6 × 11
+##   timestamp           id            age   gender gender_oth subj  edu_year occup
+##   <dttm>              <chr>         <chr> <chr>  <chr>      <chr> <chr>    <chr>
+## 1 2024-09-26 20:40:17 034010ca-4d6… 21    female ""         Depa… 2        21   
+## 2 2024-09-30 11:01:02 04e683b9-5e1… 20    male   ""         Depa… 2        20   
+## 3 2024-10-11 14:16:57 05bffbf4-08a… 20    male   ""         Depa… 1        13   
+## 4 2024-09-30 10:59:54 07537ddc-800… 19    female ""         Depa… 2        19   
+## 5 2024-09-27 07:36:03 07885f0e-1d1… 22    female ""         Depa… 2        22   
+## 6 2024-09-26 15:42:22 08811b01-c6c… 21    female ""         Depa… 2        20   
+## # ℹ 3 more variables: family_acad <chr>, orient <chr>, institute <chr>
 ```
 
 Let's plot demographic data
@@ -614,8 +88,8 @@ resp |>
 ## # Groups:   gender [3]
 ##   gender     n
 ##   <chr>  <int>
-## 1 female    84
-## 2 male      83
+## 1 female    87
+## 2 male      84
 ## 3 other      4
 ```
 
@@ -781,7 +255,7 @@ cat(sum(resp$age == resp$occup), " ot of ", nrow(resp), " respondents lived in N
 ```
 
 ```
-## 138 ot of 171 respondents lived in Norway the whole life (80.7%)
+## 142 ot of 175 respondents lived in Norway the whole life (81.14%)
 ```
 
 Only a small part of students are from abroad: 
@@ -798,473 +272,14 @@ resp_no_full_norw = resp |>
   filter(diff > 0) 
 
 resp_no_full_norw |> 
-  summarise(average_age_occup_differnece = mean(diff)) |> 
-  gt()
+  summarise(average_age_occup_differnece = mean(diff))
 ```
 
-```{=html}
-<div id="velaniwzye" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#velaniwzye table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#velaniwzye thead, #velaniwzye tbody, #velaniwzye tfoot, #velaniwzye tr, #velaniwzye td, #velaniwzye th {
-  border-style: none;
-}
-
-#velaniwzye p {
-  margin: 0;
-  padding: 0;
-}
-
-#velaniwzye .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#velaniwzye .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#velaniwzye .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#velaniwzye .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#velaniwzye .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#velaniwzye .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#velaniwzye .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#velaniwzye .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#velaniwzye .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#velaniwzye .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#velaniwzye .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#velaniwzye .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#velaniwzye .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#velaniwzye .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#velaniwzye .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#velaniwzye .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#velaniwzye .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#velaniwzye .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#velaniwzye .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#velaniwzye .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#velaniwzye .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#velaniwzye .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#velaniwzye .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#velaniwzye .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#velaniwzye .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#velaniwzye .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#velaniwzye .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#velaniwzye .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#velaniwzye .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#velaniwzye .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#velaniwzye .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#velaniwzye .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#velaniwzye .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#velaniwzye .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#velaniwzye .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#velaniwzye .gt_left {
-  text-align: left;
-}
-
-#velaniwzye .gt_center {
-  text-align: center;
-}
-
-#velaniwzye .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#velaniwzye .gt_font_normal {
-  font-weight: normal;
-}
-
-#velaniwzye .gt_font_bold {
-  font-weight: bold;
-}
-
-#velaniwzye .gt_font_italic {
-  font-style: italic;
-}
-
-#velaniwzye .gt_super {
-  font-size: 65%;
-}
-
-#velaniwzye .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#velaniwzye .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#velaniwzye .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#velaniwzye .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#velaniwzye .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#velaniwzye .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#velaniwzye .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#velaniwzye .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#velaniwzye div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-</style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="average_age_occup_differnece">average_age_occup_differnece</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="average_age_occup_differnece" class="gt_row gt_right">11.48485</td></tr>
-  </tbody>
-  
-  
-</table>
-</div>
+```
+## # A tibble: 1 × 1
+##   average_age_occup_differnece
+##                          <dbl>
+## 1                         11.5
 ```
 
 
@@ -1353,4 +368,768 @@ ggplot(data_so) +
 ```
 
 ![](analysis_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+
+## 2. Responses Analysis
+
+
+``` r
+scale_genderness = c("Completely Masculine", "Mostly Masculine", "Slightly Masculine", "Neutral", "Slightly Feminine", "Mostly Feminine", "Completely Feminine")
+scale_familiarity = c("Not Familiar at All", "Slightly Familiar", "Moderately Familiar", "Very Familiar", "Highly Familiar")
+
+evals = compose_df("evals") |> 
+  mutate(familiarity = factor(familiarity, levels = scale_familiarity),
+         gender = factor(gender, levels = scale_genderness))
+evals |>  head()
+```
+
+```
+##                                     id round assessment
+## 1 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+## 2 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+## 3 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+## 4 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+## 5 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+## 6 034010ca-4d68-4856-afa9-4d7cf8bbb003     1          0
+##                       topic         familiarity               gender intime
+## 1     Ocean Waves Formation     Highly Familiar              Neutral   TRUE
+## 2                      Soda       Very Familiar              Neutral   TRUE
+## 3                Smartphone     Highly Familiar     Mostly Masculine   TRUE
+## 4 World Health Organization Moderately Familiar              Neutral   TRUE
+## 5              Acne Product     Highly Familiar              Neutral   TRUE
+## 6      Computer Simulations     Highly Familiar Completely Masculine   TRUE
+```
+
+* For gender perception evaluations, as expected, totally normal distribution:
+
+
+``` r
+evals |> 
+  group_by(gender_level = as.factor(gender)) |> 
+  count() |> 
+  ggplot() +
+  geom_bar(aes(x = gender_level, y = n), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Distribution of gender evaluations in the prestudy",
+       x = "Level of gender perception",
+       y = "Observations") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+![](analysis_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+* For familiarity evaluations, in contrast, there's a more versatile distribution:
+
+
+``` r
+evals |> 
+  group_by(fam_level = as.factor(familiarity)) |> 
+  count() |> 
+  ggplot() +
+  geom_bar(aes(x = fam_level, y = n), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Distribution of familiarity evaluations in the prestudy",
+       x = "Level of familiarity",
+       y = "Observations") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+![](analysis_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+
+### Versioning
+
+The versioning was not counted before `2024-10-11 16:25:40` [commit](https://git.app.uib.no/ii/did/sasha_prestudy/-/commit/a024deedc01d34c2cf22346d3590eee4f05526f4) due to mistake on application's design side. More data to be gathered to find out whether the mistake can cause additional biases in data.
+
+
+``` r
+df_act |> 
+  filter(action == "version") |> 
+  arrange(timestamp)
+```
+
+```
+##             timestamp                                   id  action  value
+## 1 2024-10-11 17:45:54 d10c248e-4ba8-442a-934a-06ba0089b7a3 version radios
+## 2 2024-10-13 18:16:08 6d728738-486a-4e3f-ba5a-771d63ff9f5c version radios
+## 3 2024-10-13 22:33:36 69a34f5c-193c-4043-a4e2-134c2ccb628f version radios
+## 4 2024-10-13 23:11:48 95ae07a9-900f-4490-bdb7-7a97001b6285 version radios
+```
+
+### What topics are mostly perceived as masculine or feminine?z
+
+There's a slight shift in topics set to a be more masculine:
+
+
+``` r
+evals2 = evals |> 
+  mutate(gender = as.numeric(gender) - 4,
+         familiarity = as.numeric(familiarity))
+
+print(mean(evals2$gender))
+```
+
+```
+## [1] -0.2331792
+```
+
+It also reflects on the most extreme topics: **first 11 masuline topic are more related to the gender than the 2nd femine topic**:
+
+
+``` r
+evals2_avgs = evals2 |> 
+  filter(round == 1) |> 
+  group_by(topic) |> 
+  summarise(
+    avg_fam = mean(familiarity),
+    avg_gen = mean(gender),
+    gen_eff = abs(avg_gen)
+  ) 
+
+evals2_avgs |> 
+  arrange(-gen_eff) |> 
+  head(15) |> 
+  select(-gen_eff) |> 
+  gt() |> 
+  data_color(
+    columns = vars(avg_gen),
+    colors = scales::col_numeric(
+      c("#509DA9", "#ffeb84", "#DD6C40"), 
+      domain = c(-2.5, 0, 2))) |>
+  cols_label(
+    avg_fam = "avg.Familiarity",
+    avg_gen = "avg.Gender Score"
+  ) |> 
+  tab_header(
+    title = md("Top 15 topics that are mostly perceived as masculine or feminine"),
+    subtitle = "sorted by absolute values"
+  )
+```
+
+```
+## Warning: Since gt v0.9.0, the `colors` argument has been deprecated.
+## • Please use the `fn` argument instead.
+## This warning is displayed once every 8 hours.
+```
+
+```
+## Warning: Since gt v0.3.0, `columns = vars(...)` has been deprecated.
+## • Please use `columns = c(...)` instead.
+```
+
+```{=html}
+<div id="ecpxclzmat" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ecpxclzmat table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#ecpxclzmat thead, #ecpxclzmat tbody, #ecpxclzmat tfoot, #ecpxclzmat tr, #ecpxclzmat td, #ecpxclzmat th {
+  border-style: none;
+}
+
+#ecpxclzmat p {
+  margin: 0;
+  padding: 0;
+}
+
+#ecpxclzmat .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#ecpxclzmat .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ecpxclzmat .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ecpxclzmat .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ecpxclzmat .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ecpxclzmat .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ecpxclzmat .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ecpxclzmat .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ecpxclzmat .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#ecpxclzmat .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#ecpxclzmat .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ecpxclzmat .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ecpxclzmat .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ecpxclzmat .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ecpxclzmat .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ecpxclzmat .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#ecpxclzmat .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#ecpxclzmat .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#ecpxclzmat .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ecpxclzmat .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#ecpxclzmat .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ecpxclzmat .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ecpxclzmat .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ecpxclzmat .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ecpxclzmat .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ecpxclzmat .gt_left {
+  text-align: left;
+}
+
+#ecpxclzmat .gt_center {
+  text-align: center;
+}
+
+#ecpxclzmat .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ecpxclzmat .gt_font_normal {
+  font-weight: normal;
+}
+
+#ecpxclzmat .gt_font_bold {
+  font-weight: bold;
+}
+
+#ecpxclzmat .gt_font_italic {
+  font-style: italic;
+}
+
+#ecpxclzmat .gt_super {
+  font-size: 65%;
+}
+
+#ecpxclzmat .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#ecpxclzmat .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#ecpxclzmat .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#ecpxclzmat .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#ecpxclzmat .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#ecpxclzmat .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#ecpxclzmat .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#ecpxclzmat .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#ecpxclzmat div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="3" class="gt_heading gt_title gt_font_normal" style><span class='gt_from_md'>Top 15 topics that are mostly perceived as masculine or feminine</span></td>
+    </tr>
+    <tr class="gt_heading">
+      <td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>sorted by absolute values</td>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="topic">topic</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="avg.Familiarity">avg.Familiarity</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="avg.Gender Score">avg.Gender Score</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="topic" class="gt_row gt_left">Olympic Records</td>
+<td headers="avg_fam" class="gt_row gt_right">3.500000</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #6BA5A6; color: #FFFFFF;">-2.2500000</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Species Extinction</td>
+<td headers="avg_fam" class="gt_row gt_right">3.250000</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #96B69F; color: #000000;">-1.7500000</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Football Leagues and Rules</td>
+<td headers="avg_fam" class="gt_row gt_right">2.609467</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #9FBA9D; color: #000000;">-1.6272189</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Strategic Planning</td>
+<td headers="avg_fam" class="gt_row gt_right">3.500000</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #A9BF9B; color: #000000;">-1.5000000</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Video Games</td>
+<td headers="avg_fam" class="gt_row gt_right">3.352941</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #A9BF9B; color: #000000;">-1.5000000</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Star Trek</td>
+<td headers="avg_fam" class="gt_row gt_right">2.057143</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #BDC997; color: #000000;">-1.2190476</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Gas Station</td>
+<td headers="avg_fam" class="gt_row gt_right">3.248555</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #C6CD94; color: #000000;">-1.0867052</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Acne Product</td>
+<td headers="avg_fam" class="gt_row gt_right">2.902299</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #EEA25B; color: #000000;">1.0574713</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Computer Simulations</td>
+<td headers="avg_fam" class="gt_row gt_right">3.108911</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #D0D292; color: #000000;">-0.9504950</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Comic</td>
+<td headers="avg_fam" class="gt_row gt_right">2.986111</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #D1D392; color: #000000;">-0.9305556</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Carpentry</td>
+<td headers="avg_fam" class="gt_row gt_right">2.514851</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #D6D590; color: #000000;">-0.8613861</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Frisbee Golf</td>
+<td headers="avg_fam" class="gt_row gt_right">2.736111</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #D7D690; color: #000000;">-0.8472222</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">HR management</td>
+<td headers="avg_fam" class="gt_row gt_right">2.750000</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #F3B365; color: #000000;">0.7500000</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">Files Navigation in PC</td>
+<td headers="avg_fam" class="gt_row gt_right">3.104046</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #DFDA8E; color: #000000;">-0.7225434</td></tr>
+    <tr><td headers="topic" class="gt_row gt_left">History of maths</td>
+<td headers="avg_fam" class="gt_row gt_right">2.164384</td>
+<td headers="avg_gen" class="gt_row gt_right" style="background-color: #E1DB8D; color: #000000;">-0.6986301</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+```
+
+Possible outcomes:
+
+* as the topic list was generated entirely by males, it could be a design bias.  
+  * e.g. things that were percieved as masculine are usually more specific (olympic records, star trek) than those that were considered as feminine (hr management, poetry). 
+* maybe stimuli in psycology tend to be related with more protected class of students?
+
+### Does the distribution of familiarity scores match gender perception?
+
+There's no correlation or effect of familiarity on gender scores.  
+
+
+``` r
+ggplot(evals2_avgs) +
+  geom_point(aes(x = avg_fam, y = avg_gen, color = avg_gen), size = 4) + 
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    title = "Does the distribution of familiarity scores match gender perception?",
+    x = "Average familiarity",
+    y = "Average gender score",
+    color = ""
+  ) + 
+  scale_color_gradient2(
+    low = "#509DA9", 
+    mid = "#ffeb84", 
+    high = "#DD6C40", 
+    midpoint = 0
+  )
+```
+
+![](analysis_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
+
+
+``` r
+summary(lm(avg_gen ~ avg_fam, evals2_avgs))
+```
+
+```
+## 
+## Call:
+## lm(formula = avg_gen ~ avg_fam, data = evals2_avgs)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.88670 -0.34788  0.03469  0.38498  1.41721 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)
+## (Intercept) -0.34241    0.44977  -0.761    0.450
+## avg_fam     -0.00597    0.14801  -0.040    0.968
+## 
+## Residual standard error: 0.6878 on 46 degrees of freedom
+## Multiple R-squared:  3.536e-05,	Adjusted R-squared:  -0.0217 
+## F-statistic: 0.001627 on 1 and 46 DF,  p-value: 0.968
+```
+
+* Students seem like hesitate to give extreme values to the topics even if they are familiar with it:
+
+
+``` r
+evals2 |> 
+  filter(round == 1) |> 
+  mutate(familiarity = as.factor(familiarity),
+         gender = as.factor(gender)) |> 
+  group_by(familiarity, gender) |> 
+  count() |> 
+  ggplot() +
+    geom_bar(aes(x = gender, y = n), stat = "identity") +
+    facet_grid(rows = vars(familiarity),
+               labeller = as_labeller(c(`1` = "Not at All",
+                                        `2` = "Slightly ",
+                                        `3` = "Moderately ",
+                                        `4` = "Very",
+                                        `5` = "Highly"))) +
+    theme_minimal() +
+    labs(
+      title = "Does the distribution of familiarity scores match gender perception?",
+      x = "Average gender score",
+      y = "N responses",
+      
+    ) + 
+    scale_color_gradient2(
+      low = "#509DA9", 
+      mid = "#ffeb84", 
+      high = "#DD6C40", 
+      midpoint = 0
+    )
+```
+
+![](analysis_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+
+### Do men and women differ in the extent to which they associate the topics with the certain gender?
+
+
+``` r
+# evals  |> 
+# left_join(
+#   select(resp, id, gender), by = "gender" # rename required
+# ) |> 
+```
 
