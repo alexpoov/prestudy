@@ -291,13 +291,30 @@ ggplot(data_so) +
 ## 2. Responses Analysis
 
 ```{r}
+# todo: filtering by amount of responses
+
+topics_df = topics_df = read.csv('~/PhD/proj/code/pre-study/prestudy_app/prestudy_topics.csv')
+
 scale_genderness = c("Completely Masculine", "Mostly Masculine", "Slightly Masculine", "Neutral", "Slightly Feminine", "Mostly Feminine", "Completely Feminine")
 scale_familiarity = c("Not Familiar at All", "Slightly Familiar", "Moderately Familiar", "Very Familiar", "Highly Familiar")
 
 evals = compose_df("evals") |> 
   mutate(familiarity = factor(familiarity, levels = scale_familiarity),
-         gender = factor(gender, levels = scale_genderness))
-evals |>  head()
+         gender = factor(gender, levels = scale_genderness)) 
+
+topics_long <- topics_df %>%
+  pivot_longer(cols = c(cs, econ, lang), 
+               names_to = "field", 
+               values_to = "topic") %>%
+  select(topic_subcategory, topic, field)
+
+evals <- evals %>%
+  left_join(topics_long, by = c("topic" = "topic")) |> 
+  mutate(topic = ifelse(is.na(topic_subcategory), topic, topic_subcategory),,
+         field = ifelse(is.na(field), "base", field)) %>% 
+  select(-topic_subcategory) 
+
+head(evals)
 ```
 
 * For gender perception evaluations, as expected, totally normal distribution:
@@ -330,7 +347,132 @@ evals |>
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
 ```
 
-### Versioning
+```{r}
+evals2 = evals |> 
+  mutate(gender = as.numeric(gender) - 4,
+         familiarity = as.numeric(familiarity)) 
+```
+
+### Known Issues
+
+#### Randomisation
+
+Due to incorrect placement of `generate_topics()` function within the server, topics were generated in the same sample/order for all students of the current run, and changed only when the server was restarted.
+
+```{r}
+total_df = resp |> 
+  rename(sex = gender) |> 
+  mutate(sex = fct_recode(sex, "non binary"="other")) |> 
+  left_join(evals2, by="id") |> 
+  na.omit()
+```
+
+```{r}
+  # 
+ii = total_df |> 
+  filter(subj == 'Department of Informatics') |> 
+  group_by(topic, round) |> 
+  count() |> 
+    pivot_wider(
+    names_from = round, 
+    values_from = n,
+    names_prefix = "ii_round"
+  )
+
+matnat = total_df |> 
+  filter(institute == 'Faculty of Mathematics and Natural Sciences' & subj != 'Department of Informatics') |> 
+  group_by(topic, round) |> 
+  count() |> 
+    pivot_wider(
+    names_from = round, 
+    values_from = n,
+    names_prefix = "matnat_no_ii"
+  )
+
+other_inst = total_df |> 
+  filter(institute != 'Faculty of Mathematics and Natural Sciences') |> 
+  group_by(topic, round) |> 
+  count() |> 
+    pivot_wider(
+    names_from = round, 
+    values_from = n,
+    names_prefix = "oth_inst"
+  )
+
+occurences = topics_df |> 
+  select(topic_subcategory) |> 
+  left_join(ii, by = c('topic_subcategory' = 'topic')) |> 
+  left_join(matnat, by = c('topic_subcategory' = 'topic')) |> 
+  left_join(other_inst, by = c('topic_subcategory' = 'topic')) |> 
+  mutate(across(everything(), replace_na, 0)) |> 
+  group_by(topic_subcategory) |> 
+  mutate(total = sum(ii_round1, ii_round2, matnat_no_ii1, matnat_no_ii2, oth_inst1, oth_inst2)) |> 
+  arrange(-total) |> 
+  ungroup() 
+  
+occurences |> 
+  gt() |> 
+  data_color(
+  columns = vars(ii_round1, ii_round2, matnat_no_ii1, matnat_no_ii2, oth_inst1, oth_inst2),
+  colors = scales::col_numeric(
+    c("lightgrey", "green"), 
+    domain = c(0, 100)))
+```
+
+* we need to test hypothesis on the role of the context on topics that have enough observetions both in rounds 1 and 2.
+  * if there's an effect, that's good
+  * if there's NO effect, we can combine both rounds and get more observations. 
+  
+There are 17/55 topics with 20+ observations for each of the groups of interest:
+  
+```{r}
+occurences_topics_1 = occurences |> 
+  filter_at(vars(-topic_subcategory), all_vars(. >=20)) |> 
+  select(topic_subcategory) |> 
+  unlist() |> 
+  array()
+
+occurences |> 
+  filter_at(vars(-topic_subcategory), all_vars(. >=20)) |> 
+  gt() |> 
+  data_color(
+  columns = vars(ii_round1, ii_round2, matnat_no_ii1, matnat_no_ii2, oth_inst1, oth_inst2),
+  colors = scales::col_numeric(
+    c("lightgrey", "green"), 
+    domain = c(0, 100)))
+  
+```
+
+```{r}
+occurences_topics_2 = occurences |> 
+  group_by(topic_subcategory) |> 
+  summarise(r1 = sum(ii_round1, matnat_no_ii1, oth_inst1),
+            r2 = sum(ii_round2, matnat_no_ii2, oth_inst2)) |> 
+  filter_at(vars(-topic_subcategory), all_vars(. >=20)) |> 
+  select(topic_subcategory) |> 
+  unlist() |> 
+  array()
+
+occurences |> 
+  group_by(topic_subcategory) |> 
+  summarise(r1 = sum(ii_round1, matnat_no_ii1, oth_inst1),
+            r2 = sum(ii_round2, matnat_no_ii2, oth_inst2)) |> 
+  # filter_at(vars(-topic_subcategory), all_vars(. >=20)) |> 
+  gt() |> 
+  data_color(
+  columns = vars(r1, r2),
+  colors = scales::col_numeric(
+    c("lightgrey", "green"), 
+    domain = c(0, 200)))
+```
+
+```{r}
+all(sort(occurences_topics_1) == sort(occurences_topics_2))
+print(occurences_topics_1)
+```
+* we possibly cannot perform the analysis over the institutes, (will see about this below)
+
+#### Versioning
 
 The versioning was not counted before `2024-10-11 16:25:40` [commit](https://git.app.uib.no/ii/did/sasha_prestudy/-/commit/a024deedc01d34c2cf22346d3590eee4f05526f4) due to mistake on application's design side. More data to be gathered to find out whether the mistake can cause additional biases in data.
 
@@ -340,21 +482,66 @@ df_act |>
   arrange(timestamp)
 ```
 
-### What topics are mostly perceived as masculine or feminine?z
+### RQ1: Does the context of assessment implies a bias to familiarity / gendering of the topic?
+
+* Seems like context of language studies makes everything bit less gender biased, so we can't combine round1 and round2 data together.
+
+```{r}
+total_df |> 
+  filter(topic %in% occurences_topics_1 & field %in% c('base', 'lang')) |> 
+  group_by(topic, field) |> 
+  summarise(
+    avg_fam = mean(familiarity),
+    avg_gen = mean(gender),
+    gen_eff = abs(avg_gen),
+    obs = n()
+  ) |> 
+  filter(obs > 10) |> 
+  gt(rowname_col = "field") |> 
+  data_color(
+    columns = vars(avg_gen),
+    colors = scales::col_numeric(
+      c("#509DA9", "#ffeb84", "#DD6C40"), 
+      domain = c(-2.5, 0, 2)))
+```
+
+* No consistent effect was found for economics and computer science context:
+
+```{r}
+total_df |> 
+  filter(topic %in% occurences_topics_1 & field %in% c('base', 'econ', 'cs')) |> 
+  group_by(topic, field) |> 
+  summarise(
+    avg_fam = mean(familiarity),
+    avg_gen = mean(gender),
+    gen_eff = abs(avg_gen),
+    obs = n()
+  ) |> 
+  filter(obs > 10) |> 
+  gt(rowname_col = "field") |> 
+  data_color(
+    columns = vars(avg_gen),
+    colors = scales::col_numeric(
+      c("#509DA9", "#ffeb84", "#DD6C40"), 
+      domain = c(-2.5, 0, 2)))
+```
+
+
+### What topics are mostly perceived as masculine or feminine?
 
 There's a slight shift in topics set to a be more masculine:
 
 ```{r}
-evals2 = evals |> 
-  mutate(gender = as.numeric(gender) - 4,
-         familiarity = as.numeric(familiarity))
 
-print(mean(evals2$gender))
 ```
 
 It also reflects on the most extreme topics: **first 11 masuline topic are more related to the gender than the 2nd femine topic**:
 
 ```{r}
+# todo: add number of topic occurences in the prestudy
+# todo: subsets of ii - scitek - others
+# todo: gender split
+
 evals2_avgs = evals2 |> 
   filter(round == 1) |> 
   group_by(topic) |> 
@@ -366,7 +553,7 @@ evals2_avgs = evals2 |>
 
 evals2_avgs |> 
   arrange(-gen_eff) |> 
-  head(15) |> 
+  head(30) |> 
   select(-gen_eff) |> 
   gt() |> 
   data_color(
@@ -452,9 +639,125 @@ evals2 |>
 ### Do men and women differ in the extent to which they associate the topics with the certain gender?
 
 ```{r}
-# evals  |> 
-# left_join(
-#   select(resp, id, gender), by = "gender" # rename required
-# ) |> 
+evals_sex = resp |> 
+  mutate(sex = as.factor(gender)) |> 
+  mutate(sex = fct_recode(sex, "non binary"="other")) |> 
+  select(id, sex) |> 
+  right_join(evals, by = "id") 
+```
+
+No difference between genders in gender evaluations distribution:
+
+```{r}
+evals_sex |> 
+  group_by(sex, familiarity, gender) |> 
+  count() |> 
+  na.omit() |> 
+  ggplot() +
+  geom_bar(aes(x = gender, y = n, group = sex, fill = sex), stat = "identity", position = position_dodge()) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Gender Perception Evaluation by Gender",
+    # subtitle = "Distribution of Prestudy Respondents",
+    x = "Gender Score",
+    y = "Respondents"
+  ) +
+  scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059")) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+No significant difference between genders in familiarity distribution:
+
+```{r}
+evals_sex |> 
+  group_by(sex, familiarity, gender) |> 
+  count() |> 
+  na.omit() |> 
+  ggplot() +
+  geom_bar(aes(x = familiarity, y = n, group = sex, fill = sex), stat = "identity", position = position_dodge()) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Familiarity Evaluation by Gender",
+    # subtitle = "Distribution of Prestudy Respondents",
+    x = "Familiarity",
+    y = "Respondents"
+  ) +
+  scale_fill_manual(values=c("#DD6C40", "#509DA9", "#C4E059")) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+```{r}
+evals2sex = resp |> 
+  mutate(sex = as.factor(gender)) |> 
+  mutate(sex = fct_recode(sex, "non binary"="other")) |> 
+  select(id, sex) |> 
+  right_join(evals2, by = "id")
+
+evals2sex_avg = evals2sex |> 
+  filter(round == 1) |> 
+  group_by(topic, sex) |> 
+  summarise(
+    avg_fam = mean(familiarity),
+    avg_gen = mean(gender),
+    gen_eff = abs(avg_gen)
+  ) |> 
+  na.omit()
+
+evals2sex_avg
+
+evals2sex_avg |> 
+  arrange(-gen_eff) |> 
+  head(30) |> 
+  select(-gen_eff) |> 
+  gt(rowname_col = "sex") |> 
+  # tab_row_group(
+  #   label = "Gender",
+  #   rows = sex) |>
+  data_color(
+    columns = vars(avg_gen),
+    colors = scales::col_numeric(
+      c("#509DA9", "#ffeb84", "#DD6C40"), 
+      domain = c(-2.5, 0, 2)))
+
+
+
+  # cols_label(
+  #   avg_fam = "avg.Familiarity",
+  #   avg_gen = "avg.Gender Score"
+  # ) |> 
+  # tab_header(
+  #   title = md("Top 15 topics that are mostly perceived as masculine or feminine"),
+  #   subtitle = "sorted by absolute values"
+  # )
+```
+
+### Departments and Institutes
+
+```{r}
+evals |> 
+  left_join(select(resp, id, subj), by = "id") |> 
+  filter(subj == "Department of Informatics") |> 
+  group_by(gender_level = as.factor(gender)) |> 
+  count() |> 
+  ggplot() +
+  geom_bar(aes(x = gender_level, y = n), stat = "identity") +
+  theme_minimal() +
+  labs(title = "Distribution of gender evaluations in the prestudy",
+       x = "Level of gender perception",
+       y = "Observations") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+```
+
+--- end of non valid ---
+
+## Bugfixing
+
+```{r}
+
+
+total_df |> 
+  group_by(topic, institute, subj) |> 
+  count()
 ```
 
